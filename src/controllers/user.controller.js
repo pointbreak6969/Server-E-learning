@@ -2,7 +2,7 @@ import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import bcrypt from "bcrypt";
+
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -34,17 +34,13 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existingUser) {
     throw new ApiError(400, "User already exists");
   }
-  var user;
-  bcrypt.hash(password, process.env.SALT_ROUNDS, async (err, hash) => {
-    if (err) {
-      throw new ApiError(500, "Something went wrong while hashing password");
-    }
-    user = await User.create({
-      fullName,
-      email,
-      password: hash,
-    });
+
+  const user = await User.create({
+    fullName,
+    email,
+    password
   });
+
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
     user._id
   );
