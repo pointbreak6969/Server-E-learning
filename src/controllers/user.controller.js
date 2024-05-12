@@ -2,7 +2,8 @@ import { User } from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import { UserProfile } from "../models/userProfile.model.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -38,7 +39,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const user = await User.create({
     fullName,
     email,
-    password
+    password,
   });
 
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
@@ -66,25 +67,98 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "User created successfully", createdUser));
 });
 
-const loginUser = asyncHandler(async (req, res) =>{
-//first check whether the user exists or not
-//check their password
-//genereate tokens and send them
-//send response
+const loginUser = asyncHandler(async (req, res) => {
+  //first check whether the user exists or not
+  //check their password
+  //genereate tokens and send them
+  //send response
 
-const {email, password} = req.body;
-if (!(email && password)) throw new ApiError(204, "Email and Password are required")
-const existingUser = await User.findOne({email})
-if (!existingUser) throw new ApiError(404, "User not found")
-const isPasswordValid = await existingUser.isPasswordCorrect(password);
-if(!isPasswordValid) throw new ApiError(401, "Unauthorized access")
-  const {accessToken, refreshToken} = await generateAccessAndRefreshToken(existingUser._id);
-const loggedInUser = await User.findById(existingUser._id).select("-password -refreshToken")
-const options = {
-  httpOnly: true,
-  secure: true
-}
-return res.status(200).cookie(accessToken, options).cookie(refreshToken, options).json(new ApiResponse(200, {user: loggedInUser, accessToken, refreshToken}, "Logged In Successfully"));
-})
+  const { email, password } = req.body;
+  if (!(email && password))
+    throw new ApiError(204, "Email and Password are required");
+  const existingUser = await User.findOne({ email });
+  if (!existingUser) throw new ApiError(404, "User not found");
+  const isPasswordValid = await existingUser.isPasswordCorrect(password);
+  if (!isPasswordValid) throw new ApiError(401, "Unauthorized access");
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    existingUser._id
+  );
+  const loggedInUser = await User.findById(existingUser._id).select(
+    "-password -refreshToken"
+  );
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+  return res
+    .status(200)
+    .cookie(accessToken, options)
+    .cookie(refreshToken, options)
+    .json(
+      new ApiResponse(
+        200,
+        { user: loggedInUser, accessToken, refreshToken },
+        "Logged In Successfully"
+      )
+    );
+});
 
-export { registerUser, loginUser };
+const setUpUserProfile = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+  console.log(req.file);
+  if (!avatarLocalPath) throw new ApiError(200, "Avatar local file not found");
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  if (!avatar) {
+    throw new ApiError(400, "avatar file can't be uploaded on cloudinary");
+  }
+  console.log(avatar);
+  const { description, facebookLink, githubLink, twitterLink, instagramLink } =
+    req.body;
+  const userProfile = await UserProfile.create({
+    avatar: {
+      publicId: avatar.public_id,
+      url: avatar.url,
+    },
+    description,
+    socialMedia: {
+      facebook: facebookLink,
+      github: githubLink,
+      twitter: twitterLink,
+      instagram: instagramLink,
+    },
+  });
+  if (!userProfile)
+    throw new ApiError(
+      500,
+      "Something went wrong while setting up the user profile"
+    );
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userProfile, "User profile setup completed"));
+});
+
+const logOutUser = asyncHandler(async (req, res) => {
+  await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $unset: {
+        refreshToken: -1,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  };
+
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "User logged Out Successfully"));
+});
+export { registerUser, loginUser, setUpUserProfile };
