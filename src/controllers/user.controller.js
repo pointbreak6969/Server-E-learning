@@ -201,6 +201,44 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, user, "Account details updated successfully"));
 });
-export { registerUser, loginUser, setUpUserProfile, logOutUser };
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  // Check if email is provided
+  if (!email) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  // Find user by email
+  const user = await User.findOne({ email });
+
+  // If user doesn't exist, throw an error
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  // Generate reset token
+  const resetToken = user.generateResetToken();
+
+  // Save the reset token in the user document
+  user.resetToken = resetToken;
+  await user.save({ validateBeforeSave: false });
+
+  // Send reset password email to the user
+  // You can use a library like nodemailer to send the email
+  // Example code:
+  // const resetPasswordUrl = `http://your-website.com/reset-password/${resetToken}`;
+  // const mailOptions = {
+  //   to: user.email,
+  //   subject: "Reset Password",
+  //   text: `Click on the link to reset your password: ${resetPasswordUrl}`,
+  // };
+  // await transporter.sendMail(mailOptions);
+
+  return res.status(200).json(new ApiResponse(200, {}, "Reset password email sent"));
+});
+
+export { registerUser, loginUser, setUpUserProfile, logOutUser, forgotPassword };
+// export { registerUser, loginUser, setUpUserProfile, logOutUser };
 
 
