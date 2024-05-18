@@ -136,109 +136,51 @@ const setUpUserProfile = asyncHandler(async (req, res) => {
     .status(200)
     .json(new ApiResponse(200, userProfile, "User profile setup completed"));
 });
-
-const logOutUser = asyncHandler(async (req, res) => {
-  await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      $unset: {
-        refreshToken: -1,
-      },
-    },
-    {
-      new: true,
+const logoutUser = asyncHandler (async(req, res)=>{
+  await User.findByIdAndUpdate(req.user._id, {
+    $unset: {
+      refreshToken: 1,
     }
-  );
+  },
+{
+  new: true
+})
+const options = {
+  httpOnly: true,
+  secure: true
+}
+return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200,{}, "User logged out successfully" ))
 
-  const options = {
-    httpOnly: true,
-    secure: true,
-  };
+})
+const refreshAccessToken = asyncHandler(async (req, res)=>{
+const incomingDecodedToken = req.cookie.refreshToken || req.body.refreshToken;
+if (!incomingDecodedToken) throw new ApiError(401, "Unauthorized request")
+try {
+  const decodedToken = jwt.verify(
+    incomingDecodedToken, process.env.REFRESH_TOKEN_SECRET
+  )
+  const user = await User.findById(decodedToken?._id)
+  if (!user) throw new ApiError(401, "Invalid Refresh Token")
+  if (incomingToken !== user.refreshToken) throw new ApiError(401, "Refresh token is expired")
+    const options = {
+  httpOnly: true,
+secure: true}
 
-  return res
-    .status(200)
-    .clearCookie("accessToken", options)
-    .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged Out Successfully"));
-});
+const {accessToken, refreshToken} = await User.generateAccessAndRefreshToken(user._id)
+return res.status(200).cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json( new ApiResponse(200, {accessToken, refreshToken}, "Access token refreshed"))
+} catch (error) {
+  throw new ApiError(401, error?.message || "Invalid refresh token")
 
-const changeCurrentPassword = asyncHandler(async (req, res) => {
-  const { oldPassword, newPassword } = req.body;
+}
+})
 
-  const user = await User.findById(req.user?._id);
+const changeCurrentPassword = asyncHandler(async (req, res) =>{
+  const {oldPassword, newPassword} = req.body;
+  const user = await user.findById(req.user?._id)
+})
 
-  const isOldPasswordCorrect = await user.isPasswordCorrect(oldPassword);
-  if (!isOldPasswordCorrect) {
-    throw new APIError(400, "Invalid Old Password");
-  }
-  user.password = newPassword;
-  await user.save({ validateBeforeSave: false });
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "Password is changed successfully"));
-});
+export { registerUser, loginUser, setUpUserProfile };
 
-const updateAccountDetails = asyncHandler(async (req, res) => {
-  const { fullname, email } = req.body;
-  console.log({ fullname, email });
-  if (!fullname || !email) {
-    throw new APIError(400, "All fields are required");
-  }
-
-  const user = await User.findByIdAndUpdate(
-    req.user?._id,
-    {
-      fullname: fullname,
-      email: email,
-    },
-    {
-      new: true,
-    }
-  ).select("-password -refreshToken");
-
-  return res
-    .status(200)
-    .json(new ApiResponse(200, user, "Account details updated successfully"));
-});
-const forgotPassword = asyncHandler(async (req, res) => {
-  const { email } = req.body;
-
-  // Check if email is provided
-  if (!email) {
-    throw new ApiError(400, "Email is required");
-  }
-
-  // Find user by email
-  const user = await User.findOne({ email });
-
-  // If user doesn't exist, throw an error
-  if (!user) {
-    throw new ApiError(404, "User not found");
-  }
-
-  // Generate reset token
-  const resetToken = user.generateResetToken();
-
-  // Save the reset token in the user document
-  user.resetToken = resetToken;
-  await user.save({ validateBeforeSave: false });
-
-  // Send reset password email to the user
-  // You can use a library like nodemailer to send the email
-  // Example code:
-  // const resetPasswordUrl = `http://your-website.com/reset-password/${resetToken}`;
-  // const mailOptions = {
-  //   to: user.email,
-  //   subject: "Reset Password",
-  //   text: `Click on the link to reset your password: ${resetPasswordUrl}`,
-  // };
-  // await transporter.sendMail(mailOptions);
-
-  return res.status(200).json(new ApiResponse(200, {}, "Reset password email sent"));
-});
-
-export { registerUser, loginUser, setUpUserProfile, logOutUser, forgotPassword };
-// export { registerUser, loginUser, setUpUserProfile, logOutUser };
 
 
