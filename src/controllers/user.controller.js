@@ -193,35 +193,18 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-const changeOldPassword = asyncHandler(async (req, res)=>{
-  
+const changeCurrentPassword = asyncHandler(async (req, res)=>{
+  const {oldPassword, newPassword} = req.body;
+  const user = await User.findById(req.user?._id);
+  const isOldPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+  if (!isOldPasswordCorrect) throw new ApiError(401, "Old password is incorrect");
+  user.password = newPassword;
+  await user.save({validateBeforeSave: false});
+  return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
 })
 
-const updateUserProfile = asyncHandler(async (req, res) => {
-  const { description, facebookLink, githubLink, twitterLink, instagramLink } =
-    req.body;
-  const userProfile = await UserProfile.findOneAndUpdate(
-    { user: req.user._id },
-    {
-      description,
-      socialMedia: {
-        facebook: facebookLink,
-        github: githubLink,
-        twitter: twitterLink,
-        instagram: instagramLink,
-      },
-    },
-    { new: true }
-  );
-  if (!userProfile) {
-    throw new ApiError(500, "Something went wrong while updating user profile");
-  }
-  return res
-    .status(200)
-    .json(new ApiResponse(200, userProfile, "User profile updated successfully"));
-});
-
-export { registerUser, loginUser, setUpUserProfile, logoutUser, refreshAccessToken, updateUserProfile };
 
 
-export { registerUser, loginUser, setUpUserProfile, logoutUser, refreshAccessToken };
+
+export { registerUser, loginUser, setUpUserProfile, logoutUser, refreshAccessToken, changeCurrentPassword};
+
