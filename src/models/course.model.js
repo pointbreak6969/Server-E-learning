@@ -18,7 +18,8 @@ const CourseSchema = new Schema({
         required: true
     },
     author: {
-        type: String,
+        type: Schema.Types.ObjectId,
+        ref: "users",
         required: true
     },
     rating: {
@@ -40,33 +41,10 @@ const CourseSchema = new Schema({
     students: {
         type: Schema.Types.ObjectId,
         ref: "users"
-    },
-    videoContents : [
-        { 
-            unit: {
-                type: String,
-                required: true
-            },
-            lessons: [
-                {
-                    lessonName: {
-                        type: String,
-                        required: true
-                    },
-                    videoUrl: {
-                        type: Schema.Types.ObjectId,
-                        ref: "videos",
-                    },
-                    _id: false
-                }
-            ],
-            _id: false
-        }
-    ]
-    
+    },    
 }, 
 {
     timeseries: true
 })
 
-export const Course = mongoose.model("course", CourseSchema);
+export const Course = mongoose.model("courses", CourseSchema);

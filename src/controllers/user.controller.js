@@ -57,12 +57,12 @@ const registerUser = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure:  process.env.NODE_ENV === "production",
-      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
     })
     .json(new ApiResponse(200, createdUser, "User created successfully"));
 });
@@ -88,8 +88,8 @@ const loginUser = asyncHandler(async (req, res) => {
   );
   const options = {
     httpOnly: true,
-    secure:  process.env.NODE_ENV === "production",
-    sameSite: "none"
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
   };
   return res
     .status(200)
@@ -194,21 +194,30 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-const getCurrentUser = asyncHandler(async (req, res)=>{
-  return res.status(200).json(new ApiResponse(200, req.user, "User found successfully"));
-})
-const changeCurrentPassword = asyncHandler(async (req, res)=>{
-  const {oldPassword, newPassword} = req.body;
+const getCurrentUser = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, req.user, "User found successfully"));
+});
+const changeCurrentPassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = req.body;
   const user = await User.findById(req.user?._id);
   const isOldPasswordCorrect = await user.isPasswordCorrect(oldPassword);
-  if (!isOldPasswordCorrect) throw new ApiError(401, "Old password is incorrect");
+  if (!isOldPasswordCorrect)
+    throw new ApiError(401, "Old password is incorrect");
   user.password = newPassword;
-  await user.save({validateBeforeSave: false});
-  return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"));
-})
+  await user.save({ validateBeforeSave: false });
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, "Password changed successfully"));
+});
 
-
-
-
-export { registerUser, loginUser, setUpUserProfile, logoutUser, refreshAccessToken, changeCurrentPassword, getCurrentUser};
-
+export {
+  registerUser,
+  loginUser,
+  setUpUserProfile,
+  logoutUser,
+  refreshAccessToken,
+  changeCurrentPassword,
+  getCurrentUser,
+};

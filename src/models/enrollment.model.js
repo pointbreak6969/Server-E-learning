@@ -1,7 +1,7 @@
 import mongoose, {Schema} from "mongoose";
 
 const enrollmentSchema = new Schema({
-    course: {
+    courseId: {
         type: Schema.Types.ObjectId,  //to which course user is enrolled
         ref: "courses",
         required: true
@@ -20,4 +20,5 @@ const enrollmentSchema = new Schema({
     timestamps: true
 })
 
-export const Enrollment = mongoose.model("enrollment", enrollmentSchema);
+const Enrollment = mongoose.model("enrollment", enrollmentSchema);
+export default Enrollment;

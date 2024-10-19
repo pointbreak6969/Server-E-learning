@@ -1,6 +1,11 @@
 import mongoose, { Schema } from "mongoose";
 
 const userProfileSchema = new Schema({
+  userId : {
+    type: Schema.Types.ObjectId,
+    ref: "users",
+    required: true,
+  },
   avatar: {
     publicId: {
       type: String,
