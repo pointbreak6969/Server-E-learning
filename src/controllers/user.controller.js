@@ -56,12 +56,12 @@ const registerUser = asyncHandler(async (req, res) => {
     .status(201)
     .cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "none",
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: true,
+      secure:  process.env.NODE_ENV === "production",
       sameSite: "none",
     })
     .json(new ApiResponse(200, createdUser, "User created successfully"));
@@ -88,7 +88,8 @@ const loginUser = asyncHandler(async (req, res) => {
   );
   const options = {
     httpOnly: true,
-    secure: true,
+    secure:  process.env.NODE_ENV === "production",
+    sameSite: "none"
   };
   return res
     .status(200)
