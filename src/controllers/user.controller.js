@@ -3,7 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-import { UserProfile } from "../models/userProfile.model.js";
+
 
 const generateAccessAndRefreshToken = async (userId) => {
   try {
@@ -56,13 +56,13 @@ const registerUser = asyncHandler(async (req, res) => {
     .status(201)
     .cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: true,
+      sameSite:"none",
     })
     .cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: true,
+      sameSite: "none",
     })
     .json(new ApiResponse(200, createdUser, "User created successfully"));
 });
@@ -88,17 +88,17 @@ const loginUser = asyncHandler(async (req, res) => {
   );
   const options = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "Lax",
+    secure: true,
+    sameSite: "none",
   };
   return res
     .status(200)
-    .cookie(accessToken, options)
-    .cookie(refreshToken, options)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
     .json(
       new ApiResponse(
         200,
-        { user: loggedInUser, accessToken, refreshToken },
+        { user: loggedInUser},
         "Logged In Successfully"
       )
     );

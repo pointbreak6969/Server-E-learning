@@ -16,6 +16,8 @@ app.use(
 );
 
 //import routes
-import userRoutes from "./routes/user.routes.js";
+import userRoutes from "./routes/user.route.js";
+import videoRoutes from "./routes/video.route.js"
 app.use("/api/user", userRoutes);
+app.use("/api/video", videoRoutes)
 export { app };
