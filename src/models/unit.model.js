@@ -1,16 +1,15 @@
-import { Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose"; 
 
 const UnitSchema = new  Schema({
     courseId: {
         type: Schema.Types.ObjectId,
-        ref : "courses",
-        required: true
+        ref : "courses"
     },
-    name: {
+    unitName: {
         type: String,
         required: true
     },
-    order: {
+    unitNumber: {
         type: Number,
         required: true
     },

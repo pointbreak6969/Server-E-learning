@@ -17,9 +17,11 @@ app.use(
 
 //import routes
 import userRoutes from "./routes/user.route.js";
-import videoRoutes from "./routes/video.route.js"
 import courseRoutes from "./routes/course.route.js"
+import unitRoutes from "./routes/unit.route.js"
+import lessonRoutes from "./routes/lesson.route.js"
 app.use("/api/user", userRoutes);
-app.use("/api/video", videoRoutes);
 app.use("/api/course", courseRoutes)
+app.use("/api/unit", unitRoutes)
+app.use("/api/lesson", lessonRoutes)
 export { app };

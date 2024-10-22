@@ -9,6 +9,10 @@ const CourseSchema = new Schema({
         type: String,
         required: true,
     },
+    category: {
+        type: String,
+        required: true
+    },
     thumbnail: {
         type: String,
         required: true
@@ -36,14 +40,10 @@ const CourseSchema = new Schema({
     previousPrice: {
         type: Number,
         min: 0
-    },
-    students: {
-        type: Schema.Types.ObjectId,
-        ref: "users"
-    },    
+    },   
 }, 
 {
-    timeseries: true
+   timestamps: true
 })
 
  const Course = mongoose.model("courses", CourseSchema);

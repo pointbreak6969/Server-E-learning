@@ -1,26 +1,41 @@
 import mongoose, { Schema } from "mongoose";
 
-const LessonSchema = new Schema({
+const LessonSchema = new Schema(
+  {
     unitId: {
-        type: Schema.Types.ObjectId,
-        ref: "units",
-        required: true
+      type: Schema.Types.ObjectId,
+      ref: "units",
     },
-    videoId: {
-        type: Schema.Types.ObjectId,
-        ref: "videos",
-        required: true
+    lessonName: {
+      type: String,
+      required: true,
     },
-    name : {
+    lessonNumber: {
+      type: Number,
+      required: true,
+    },
+    videoFile: {
+      publicId: {
         type: String,
         required: true,
-    },
-    order: {
+      },
+      url: {
+        type: String,
+        required: true,
+      },
+      duration: {
         type: Number,
-        required: true
-    }
+      },
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-})
-
-const Lesson = mongoose.model("lessons", LessonSchema); 
+const Lesson = mongoose.model("lessons", LessonSchema);
 export default Lesson;

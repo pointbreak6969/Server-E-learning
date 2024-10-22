@@ -4,9 +4,11 @@ import { ApiError } from "../utils/ApiError.js";
 import Course from "../models/course.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
+
 const createCourse = asyncHandler(async (req, res) => {
-  const { name, description, level, currentPrice, previousPrice } = req.body;
-  if (!(name && description && level && currentPrice)) {
+  const { name, description, level, currentPrice, previousPrice, category } =
+    req.body;
+  if (!(name && description && level && currentPrice && category)) {
     throw new ApiError(400, "All fields are required");
   }
   const thumbnailLocalPath = req.file?.path;
@@ -25,6 +27,7 @@ const createCourse = asyncHandler(async (req, res) => {
     author: req.user?._id,
     currentPrice,
     previousPrice,
+    category,
   });
   if (!createdCourse) {
     throw new ApiError(500, "Error while creating a course");
@@ -32,7 +35,11 @@ const createCourse = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(201, createdCourse, "Course has been created successfully")
+      new ApiResponse(
+        201,
+        createdCourse,
+        "Course has been created successfully"
+      )
     );
 });
 
