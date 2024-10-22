@@ -24,7 +24,6 @@ const CourseSchema = new Schema({
     },
     rating: {
         type: Number,
-        required: true,
         default: 0,
         min: 0,
         max: 5
@@ -47,4 +46,5 @@ const CourseSchema = new Schema({
     timeseries: true
 })
 
-export const Course = mongoose.model("courses", CourseSchema);
+ const Course = mongoose.model("courses", CourseSchema);
+ export default Course;
