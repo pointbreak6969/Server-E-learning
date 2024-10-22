@@ -5,6 +5,11 @@ import Lesson from "../models/lesson.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { isValidObjectId } from "mongoose";
 const createLesson = asyncHandler(async (req, res, next) => {
+  //First we need to ask lessonName, and LessonNumber from user.
+  // Since each and every lesson is associated with a unit so we have to get a unitId which can be obtained from params
+  // We also need to upload a video since each lesson will have a video
+  //if any field is missing throw an error
+  //save the data in database
   try {
     const { lessonName, lessonNumber } = req.body;
     if (!(lessonName && lessonNumber)) {
