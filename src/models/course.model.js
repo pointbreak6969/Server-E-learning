@@ -14,8 +14,14 @@ const CourseSchema = new Schema({
         required: true
     },
     thumbnail: {
+      url: {
+        type: String, 
+        required: true,
+      },
+      publicId: {
         type: String,
-        required: true
+        required : true
+      }
     },
     level: {
         type: String,

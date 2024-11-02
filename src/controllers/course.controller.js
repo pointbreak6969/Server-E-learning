@@ -3,7 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import Course from "../models/course.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
-
+import mongoose from "mongoose";
 
 const createCourse = asyncHandler(async (req, res) => {
   const { name, description, level, currentPrice, previousPrice, category } =
@@ -23,7 +23,7 @@ const createCourse = asyncHandler(async (req, res) => {
     name,
     description,
     level,
-    thumbnail: thumbnail.public_id,
+    thumbnail: {url: thumbnail.url, publicId: thumbnail.public_id},
     author: req.user?._id,
     currentPrice,
     previousPrice,
@@ -43,4 +43,36 @@ const createCourse = asyncHandler(async (req, res) => {
     );
 });
 
-export { createCourse };
+const getUserCourse = asyncHandler(async (req, res) => {
+  const user = req.user?._id;
+  if (!user) {
+    throw new ApiError(401, "Unauthorized request");
+  }
+  const userCourse =await Course.aggregate([
+    {
+      $match: {
+        author: new mongoose.Types.ObjectId(user)
+      }
+    },
+    {
+      $project: {
+        _id: 1,
+        name: 1,
+        description: 1,
+        category: 1,
+        currentPrice: 1,
+        previousPrice: 1,
+        thumbnail: 1,
+        level: 1
+      }
+    }
+  ],);
+  if (!userCourse.length) {
+    throw new ApiError(500, "User haven't created any course");
+  }
+  return res
+    .status(200)
+    .json(new ApiResponse(201, userCourse, "User's course found successfully"));
+});
+
+export { createCourse, getUserCourse };
