@@ -72,7 +72,12 @@ const getUserCourse = asyncHandler(async (req, res) => {
   }
   return res
     .status(200)
-    .json(new ApiResponse(201, userCourse, "User's course found successfully"));
+    .json(new ApiResponse(200, userCourse, "User's course found successfully"));
 });
 
-export { createCourse, getUserCourse };
+const getAllCourse = asyncHandler(async (req, res)=>{
+   const response = await Course.find({});
+   return res.status(200).json(new ApiResponse(200, response, "All courses"))
+})
+
+export { createCourse, getUserCourse, getAllCourse };
