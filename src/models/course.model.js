@@ -46,7 +46,11 @@ const CourseSchema = new Schema({
     previousPrice: {
         type: Number,
         min: 0
-    },   
+    },  
+    status: {
+        type:String,
+        default: "Draft",
+    } 
 }, 
 {
    timestamps: true

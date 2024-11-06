@@ -63,7 +63,8 @@ const getUserCourse = asyncHandler(async (req, res) => {
         currentPrice: 1,
         previousPrice: 1,
         thumbnail: 1,
-        level: 1
+        level: 1,
+        status: 1
       }
     }
   ],);
